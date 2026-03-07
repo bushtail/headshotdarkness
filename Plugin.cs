@@ -1,15 +1,19 @@
 ﻿using BepInEx;
 using HeadshotDarkness.Patches;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 using HeadshotDarkness.Components;
 using HeadshotDarkness.Helpers;
 using HeadshotDarkness.Enums;
+using UnityEngine;
 
 namespace HeadshotDarkness
 {
     [BepInPlugin("com.pein.headshotdarkness", "HeadshotDarkness", "1.2.4")]
     public class Plugin : BaseUnityPlugin
     {
+        internal static new ManualLogSource Logger;
+        
         public static ConfigEntry<bool> Enabled { get; set; }
         public static ConfigEntry<bool> DisableUIDeathSound { get; set; }
 
@@ -21,7 +25,9 @@ namespace HeadshotDarkness
         public static ConfigEntry<bool> DeathTextEnabled { get; set; }
         public static ConfigEntry<string> DeathTextString { get; set; }
         public static ConfigEntry<bool> DeathTextContextual { get; set; }
+        public static ConfigEntry<EDeathStringFont> DeathTextFont { get; set; }
         public static ConfigEntry<int> DeathTextFontSize { get; set; }
+        public static ConfigEntry<Color> DeathTextFontColor { get; set; }
         public static ConfigEntry<float> DeathTextLifeTime { get; set; }
         public static ConfigEntry<float> DeathTextFadeInTime { get; set; }
         public static ConfigEntry<float> DeathTextFadeOutTime { get; set; }
@@ -86,6 +92,7 @@ namespace HeadshotDarkness
                     null,
                     new ConfigurationManagerAttributes { Order = 950 }
                 ));
+            DeathTextString.SettingChanged += (_, _) => DeathTextManager.UpdateFromConfig();
 
             DeathTextContextual = Config.Bind(deathText, "Contextual Death Text", false, new ConfigDescription(
                     "Set if death texts should be contextual. Pulls random death strings from deathstrings.json depending on how you died instead of using the Death Text String value",
@@ -93,11 +100,26 @@ namespace HeadshotDarkness
                     new ConfigurationManagerAttributes { Order = 949 }
                 ));
 
+            DeathTextFont = Config.Bind(deathText, "Death Text Font", EDeathStringFont.Arial, new ConfigDescription(
+                    "Set the death text font style",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 935 }
+                ));
+            DeathTextFont.SettingChanged += (_, _) => DeathTextManager.UpdateFromConfig();
+            
             DeathTextFontSize = Config.Bind(deathText, "Death Text Size", 24, new ConfigDescription(
                     "Set the death text font size",
                     new AcceptableValueRange<int>(1, 64),
                     new ConfigurationManagerAttributes { Order = 930 }
                 ));
+            DeathTextFontSize.SettingChanged += (_, _) => DeathTextManager.UpdateFromConfig();
+            
+            DeathTextFontColor = Config.Bind(deathText, "Death Text Color", new Color(1, 1, 1, 1), new ConfigDescription(
+                    "Set the death text font color. Each value ranges from [0-1]",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 925 }
+                ));
+            DeathTextFontColor.SettingChanged += (_, _) => DeathTextManager.UpdateFromConfig();
 
             DeathTextLifeTime = Config.Bind(deathText, "Death Text Lifetime", 3f, new ConfigDescription(
                     "Changes how long the death text is visible for",
@@ -148,11 +170,13 @@ namespace HeadshotDarkness
 
         private void Awake()
         {
-            PluginDebug.CreateLogger(Logger);
+            Logger = base.Logger;
+            PluginDebug.Logger = Logger;
 
             DoConfig();
             DoPatches();
-
+            
+            FontHelper.LoadFonts();
             JsonHelper.LoadDeathStrings();
         }
     }

@@ -51,8 +51,7 @@ namespace HeadshotDarkness.Components
         private void DoHeadshotDarkness(EDamageType damageType) // ...
         {
             _activeHealthController.DiedEvent -= DoHeadshotDarkness;
-
-            Type deathType = typeof(DeathFade);
+            
             Player player = Util.GetLocalPlayer();
             EBodyPart lastBodyPart = player.LastDamagedBodyPart;
             EDamageType lastDamageType = player.LastDamageType;

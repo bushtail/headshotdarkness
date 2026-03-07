@@ -12,11 +12,6 @@ namespace HeadshotDarkness.Helpers
     {
         public static ManualLogSource Logger { get; set; }
 
-        public static void CreateLogger(ManualLogSource logSource)
-        {
-            Logger = logSource;
-        }
-
         public static void LogInfo(string message)
         {
             if (!Plugin.Debug.Value) return;

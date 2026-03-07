@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HeadshotDarkness.Enums
+﻿namespace HeadshotDarkness.Enums
 {
     public enum EDarknessType
     {
@@ -18,5 +12,11 @@ namespace HeadshotDarkness.Enums
         Generic = 0,
         Headshot = 1,
         Explosion = 2,
+    }
+
+    public enum EDeathStringFont
+    {
+        Arial,
+        Bender
     }
 }

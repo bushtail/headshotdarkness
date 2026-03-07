@@ -1,6 +1,9 @@
-﻿using HeadshotDarkness.Helpers;
+﻿using HeadshotDarkness.Enums;
+using HeadshotDarkness.Helpers;
 using System.Collections;
+using TMPro;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 using UnityEngine.UI;
 
 namespace HeadshotDarkness.Components
@@ -9,13 +12,12 @@ namespace HeadshotDarkness.Components
     {
         public static DeathTextManager Instance { get; private set; }
 
-        private static Font _arial = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        private static Color _colorWhite = new Color(1, 1, 1, 1);
-        private static Color _colorTransparent = new Color(1, 1, 1, 0);
+        public Canvas Canvas;
+        public CanvasScaler CanvasScaler;
+        public TextMeshProUGUI DeathText;
 
-        private Canvas _canvas;
-        private CanvasScaler _canvasScaler;
-        private Text _deathText;
+        public Color TextColor;
+        public Color TextColor2;
 
         public static DeathTextManager Create()
         {
@@ -35,22 +37,41 @@ namespace HeadshotDarkness.Components
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            _canvas = gameObject.AddComponent<Canvas>();
-            _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            _canvas.sortingOrder = 999;
+            Canvas = gameObject.AddComponent<Canvas>();
+            Canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            Canvas.sortingOrder = 999;
 
-            _canvasScaler = gameObject.AddComponent<CanvasScaler>();
+            CanvasScaler = gameObject.AddComponent<CanvasScaler>();
 
-            _deathText = gameObject.AddComponent<Text>();
-            _deathText.color = new Color(1, 1, 1, 0);
-            _deathText.font = _arial;
-            _deathText.fontSize = Plugin.DeathTextFontSize.Value;
-            _deathText.alignment = TextAnchor.MiddleCenter;
+            DeathText = gameObject.AddComponent<TextMeshProUGUI>();
+            DeathText.color = new Color(1, 1, 1, 0);
+            DeathText.font = FontHelper.FindFont(EDeathStringFont.Arial);
+            DeathText.fontSize = Plugin.DeathTextFontSize.Value;
+            DeathText.alignment = TextAlignmentOptions.Center;
+            
+            UpdateFromConfig();
+        }
+
+        public static void UpdateFromConfig()
+        {
+            if (Instance == null) return;
+
+            DeathTextManager manager = Instance;
+            
+            Color color = Plugin.DeathTextFontColor.Value;
+
+            manager.TextColor = color;
+            manager.TextColor2 = new Color(color.r, color.g, color.b, 0);
+
+            manager.DeathText.color = manager.TextColor2;
+            manager.DeathText.font = FontHelper.FindFont(Plugin.DeathTextFont.Value);
+            manager.DeathText.text = Plugin.DeathTextString.Value;
+            manager.DeathText.fontSize = Plugin.DeathTextFontSize.Value;
         }
 
         private IEnumerator FadeText(float targetAlpha, float duration)
         {
-            Color curColor = _deathText.color;
+            Color curColor = DeathText.color;
             float startAlpha = curColor.a;
             float elapsedTime = 0f;
 
@@ -58,17 +79,17 @@ namespace HeadshotDarkness.Components
             {
                 elapsedTime += Time.deltaTime;
                 float newAlpha = startAlpha + (targetAlpha - startAlpha) * (elapsedTime / duration);
-                _deathText.color = new Color(1, 1, 1, newAlpha);
+                DeathText.color = new Color(curColor.r, curColor.g, curColor.b, newAlpha);
                 yield return null;
             }
 
-            _deathText.color = new Color(1, 1, 1, targetAlpha);
+            DeathText.color = new Color(curColor.r, curColor.g, curColor.b, targetAlpha);
         }
 
         private IEnumerator TextSequence(string text, int size, float time, float fadeInTime, float fadeOutTime, float fadeDelay)
         {
-            _deathText.text = text;
-            _deathText.fontSize = size;
+            DeathText.text = text;
+            DeathText.fontSize = size;
 
             PluginDebug.LogInfo("text fade delay");
             yield return new WaitForSeconds(fadeDelay);
