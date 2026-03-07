@@ -21,7 +21,7 @@ namespace HeadshotDarkness.Patches
         [PatchPrefix]
         private static bool PatchPreFix(EUISoundType soundType)
         {
-            bool enabled = Plugin.Enabled.Value;
+            bool enabled = Plugin.Enabled.Value && Plugin.DisableUIDeathSound.Value;
             if (enabled && soundType == EUISoundType.PlayerIsDead)
             {
                 if (SkipSound == true)

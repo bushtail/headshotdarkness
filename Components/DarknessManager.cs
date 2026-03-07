@@ -34,7 +34,7 @@ namespace HeadshotDarkness.Components
             _camera = CameraClass.Instance.Camera;
             _deathFade = _camera.GetComponent<DeathFade>();
 
-            _activeHealthController.DiedEvent += DoHeadshotDarkness;
+            _activeHealthController.DiedEvent += OnPlayerDied;
         }
 
         private void Awake() {
@@ -48,15 +48,22 @@ namespace HeadshotDarkness.Components
             DontDestroyOnLoad(gameObject);
         }
 
-        private void DoHeadshotDarkness(EDamageType damageType) // ...
+        private void OnPlayerDied(EDamageType damageType) // ...
         {
-            _activeHealthController.DiedEvent -= DoHeadshotDarkness;
+            if (!Plugin.Enabled.Value) return;
+            
+            _activeHealthController.DiedEvent -= OnPlayerDied;
             
             Player player = Util.GetLocalPlayer();
             EBodyPart lastBodyPart = player.LastDamagedBodyPart;
             EDamageType lastDamageType = player.LastDamageType;
             EDarknessType darknessType = Util.GetDeathFadeType(lastBodyPart, lastDamageType);
+            
+            DoHeadshotDarkness(lastBodyPart, lastDamageType, darknessType);
+        }
 
+        private void DoHeadshotDarkness(EBodyPart lastBodyPart, EDamageType lastDamageType, EDarknessType darknessType)
+        {
             if (darknessType != EDarknessType.Vanilla)
             {
                 _animationCurveField?.SetValue(_deathFade, Curves.EnableCurve);
