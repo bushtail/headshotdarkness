@@ -190,7 +190,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="HeadshotDarkness.csproj.user" />
+        <Content Include="HeadshotDarkness.csproj.user" />
     </ItemGroup>
 
     <Target Name="CopyToSPT" AfterTargets="AfterBuild" Condition="'$(SPTPath)' != ''">
